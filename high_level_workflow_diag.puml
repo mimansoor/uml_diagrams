@@ -1,39 +1,36 @@
-@startuml
-!theme vibrant
-skinparam cloud {
-    bordercolor #A80036
-    backgroundcolor #F8E0E6
-}
-skinparam database {
-    bordercolor #008200
-    backgroundcolor #D9F7D9
-}
-skinparam agent {
-    bordercolor #004080
-    backgroundcolor #D9E5F7
-}
-
-cloud "Yahoo Finance\n(Real-World Data)" as YF
-database "Market Data Cache\n(SPY-VIX_data.csv)" as Cache
-agent "Market Simulator\n(price_simulator.py)" as Sim
-database "Feature-Rich DataFrame\n(with RSI, VIX, SMA, etc.)" as Features
-agent "Coach\n(main.py, Coach.py)" as Coach
-agent "Self-Play Workers\n(Parallel CPU Processes)" as Workers
-database "Training Examples\n(state, pi, v)" as Examples
-agent "Neural Network\n(NNet.py)\n[Attention-based]" as NNet
-database "Model Checkpoints\n(best.pth.tar)" as Checkpoint
-
-YF --> Sim : Downloads data
-Sim --> Cache : Saves raw data
-Cache --> Sim : Loads cached data
-Sim --> Features : Calculates indicators
-Features --> Coach : Provides historical data
-Coach --> Workers : Dispatches episodes
-Workers -> NNet : Uses for policy (read-only)
-Workers -> Examples : Generates training data
-Examples --> Coach : Collects data
-Coach -> NNet : Trains the network
-NNet --> Checkpoint : Saves best model
-Checkpoint --> Coach : Loads best model for next cycle
-
-@enduml
+    @startuml
+    !theme vibrant
+    skinparam rectangle {
+        shadowing true
+        borderRadius 10
+        stereoTypeFontSize 0
+    }
+    database "Input State" {
+        node "<b>chain</b>\n(2, 20, 6)" as Chain
+        node "<b>portfolio</b>\n(4, 4)" as Portfolio
+        node "<b>scalars</b>\n(46,)" as Scalars
+        node "<b>payoff</b>\n(38,)" as Payoff
+    }
+    frame "Neural Network Processing (OptionsNNet)" {
+        rectangle "<b>Attention Tower</b>\n(Transformer Encoder)" as AttentionTower #AliceBlue
+        rectangle "<b>FC Tower 1</b>\n(Portfolio)" as FCTower1 #AliceBlue
+        rectangle "<b>FC Tower 2</b>\n(Scalars)" as FCTower2 #AliceBlue
+        rectangle "<b>FC Tower 3</b>\n(Payoff)" as FCTower3 #AliceBlue
+        rectangle "<b>Merge Layer</b>" as Merge #LightCyan
+        rectangle "<b>Final FC Layers</b>" as FinalLayers #AliceBlue
+        rectangle "<b>Policy Head (π)</b>" as PolicyHead #LightGreen
+        rectangle "<b>Value Head (v)</b>" as ValueHead #LightGreen
+        
+        Chain --> AttentionTower
+        Portfolio --> FCTower1
+        Scalars --> FCTower2
+        Payoff --> FCTower3
+        AttentionTower --> Merge
+        FCTower1 --> Merge
+        FCTower2 --> Merge
+        FCTower3 --> Merge
+        Merge --> FinalLayers
+        FinalLayers --> PolicyHead
+        FinalLayers --> ValueHead
+    }
+    @enduml
