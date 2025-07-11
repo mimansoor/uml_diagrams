@@ -1,0 +1,30 @@
+@startuml
+!theme vibrant
+skinparam rectangle {
+    shadowing true
+    borderRadius 10
+    stereoTypeFontSize 0
+}
+skinparam database {
+    shadowing true
+    stereoTypeFontSize 0
+}
+frame "Neural Network Processing (OptionsNNet)" {
+    rectangle "<b>Convolutional Tower</b>\n<size:12>(Processes Chain)" as ConvTower #AliceBlue
+    rectangle "<b>FC Tower 1</b>\n<size:12>(Processes Portfolio)" as FCTower1 #AliceBlue
+    rectangle "<b>FC Tower 2</b>\n<size:12>(Processes Scalars)" as FCTower2 #AliceBlue
+    rectangle "<b>FC Tower 3</b>\n<size:12>(Processes Payoff)" as FCTower3 #AliceBlue
+    rectangle "<b>Merge Layer</b>\n<size:12>(Concatenate all features)" as Merge #LightCyan
+    rectangle "<b>Final FC Layers</b>" as FinalLayers #AliceBlue
+    rectangle "<b>Policy Head (π)</b>\n<size:12>Action Probabilities" as PolicyHead #LightGreen
+    rectangle "<b>Value Head (v)</b>\n<size:12>State-Value Estimate" as ValueHead #LightGreen
+
+    ConvTower --> Merge
+    FCTower1 --> Merge
+    FCTower2 --> Merge
+    FCTower3 --> Merge
+    Merge --> FinalLayers
+    FinalLayers --> PolicyHead
+    FinalLayers --> ValueHead
+}
+@enduml
