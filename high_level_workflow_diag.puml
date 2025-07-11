@@ -1,0 +1,39 @@
+@startuml
+!theme vibrant
+skinparam cloud {
+    bordercolor #A80036
+    backgroundcolor #F8E0E6
+}
+skinparam database {
+    bordercolor #008200
+    backgroundcolor #D9F7D9
+}
+skinparam agent {
+    bordercolor #004080
+    backgroundcolor #D9E5F7
+}
+
+cloud "Yahoo Finance\n(Real-World Data)" as YF
+database "Market Data Cache\n(SPY-VIX_data.csv)" as Cache
+agent "Market Simulator\n(price_simulator.py)" as Sim
+database "Feature-Rich DataFrame\n(with RSI, VIX, SMA, etc.)" as Features
+agent "Coach\n(main.py, Coach.py)" as Coach
+agent "Self-Play Workers\n(Parallel CPU Processes)" as Workers
+database "Training Examples\n(state, pi, v)" as Examples
+agent "Neural Network\n(NNet.py)\n[Attention-based]" as NNet
+database "Model Checkpoints\n(best.pth.tar)" as Checkpoint
+
+YF --> Sim : Downloads data
+Sim --> Cache : Saves raw data
+Cache --> Sim : Loads cached data
+Sim --> Features : Calculates indicators
+Features --> Coach : Provides historical data
+Coach --> Workers : Dispatches episodes
+Workers -> NNet : Uses for policy (read-only)
+Workers -> Examples : Generates training data
+Examples --> Coach : Collects data
+Coach -> NNet : Trains the network
+NNet --> Checkpoint : Saves best model
+Checkpoint --> Coach : Loads best model for next cycle
+
+@enduml
